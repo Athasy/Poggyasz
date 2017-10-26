@@ -35,9 +35,9 @@ public class Main {
 	public static void main(String[] args){
 		readItems();
 		
-		quickSortByArea(0, itemCount-1);
+		sortItems();
 		
-		printItems();
+		//printItems();
 		
 		putItemsIntoLuggage();
 		
@@ -54,12 +54,10 @@ public class Main {
 		while(at >= 0) {
 			Item insertingItem = items.get(at);
 			done = false;
-			//System.out.println("at:" + at + " itemID:" + insertingItem.getId() + " meret: (" + insertingItem.getHeight() + ":" + insertingItem.getWidth() + ")");
 			
 			for(int y = 0; y < lHeight; y++) {
 				for(int x = 0; x < lWidth; x++) {
 					if(luggage[y][x] == 0 && !done) {
-						//System.out.println(fitsIntoLuggage(y, x, insertingItem.getHeight(), insertingItem.getWidth()));
 						fits = fitsIntoLuggage(y, x, insertingItem.getHeight(), insertingItem.getWidth());
 						if(fits) {
 							putIntoLuggage(y, x, insertingItem);
@@ -77,72 +75,67 @@ public class Main {
 				}
 			}
 			
-			at--;
+			//System.out.println(insertingItem.getId());
 			//printLuggage();
-			//System.out.print("\n");
-		}
-		
-		
-		/*
-		int i = itemCount-1;
-		
-		boolean zeroSet = false;
-		boolean checked = false;
-		boolean needRotate = false;
-		
-		while(i >= 0) {
-			int yZero = 0;
-			int xZero = 0;
-			for (int p = 0; p < lWidth; p++) {
-				for (int q = 0; q < lHeight; q++) {
-					if(!zeroSet && luggage[q][p] == 0) {
-						int sum = 0;
-						if(items.get(i).getHeight() <= lHeight-(q) && items.get(i).getWidth() <= lWidth-(p)) {
-							for(int r = p; r < items.get(i).getHeight()-1; r++) {
-								for(int s = q; s < items.get(i).getWidth()-1; s++) {
-									if(luggage[r][s] != 0) {
-										sum += luggage[r][s];
-									}
-								}
-							}
-						}
-						else { sum = 1; needRotate = true;}
-						
-						if(sum == 0) {
-							needRotate = false;
-							yZero = q;
-							xZero = p;
-							zeroSet = true;
-							checked = true;
-						}
-					}
-				}
-			}
-			zeroSet = false;
 			
-			if(items.get(i).getHeight() <= lHeight-(yZero) && items.get(i).getWidth() <= lWidth-(xZero) && checked && !needRotate) {
-				System.out.println(items.get(i).getId());
-				System.out.println("------------------------------------------------------------");
-				putIntoLuggage(yZero, xZero, i);
-				i--;
-			}else{
+			at--;
+		}
+	}
+	
+	public static void getEmRight() {
+		for(int i = 0; i < itemCount; i++) {
+			if(items.get(i).getHeight() < items.get(i).getWidth()) {
 				items.get(i).rotate();
 			}
 		}
-		*/
 	}
 	
-	public static void quickSortByArea(int min, int max) {
+	public static void sortItems() {
+		getEmRight();
+		
+		quickSortByLongSide(0, itemCount-1);
+		
+		//printItems();
+		
+		int remaining = itemCount;
+		int lastPoz = 0;
+		
+		while(remaining > 0) {
+			int cnt = 0;
+			int startOfSection = lastPoz;
+			int comp = items.get(lastPoz).getHeight();
+			
+			for(int i = 0; i < itemCount; i++) {
+				if(items.get(i).getHeight() == comp) {
+					cnt++;
+				}
+			}
+			
+			//System.out.println(lastPoz);
+			
+			lastPoz += cnt;
+			
+			//System.out.println(lastPoz + "\n");
+			
+			quickSortByShortSide(startOfSection, lastPoz-1);
+			remaining -= cnt;
+		}
+		
+		//printItems();
+		
+	}
+	
+	public static void quickSortByLongSide(int min, int max) {
 		int i = min;
 		int j = max;
 		
-		int pivot = items.get(min).getArea();
+		int pivot = items.get(min).getHeight();
 		
 		while (i <= j) {
-			while(items.get(i).getArea() < pivot) {
+			while(items.get(i).getHeight() < pivot) {
 				i++;
 			}
-			while(items.get(j).getArea() > pivot) {
+			while(items.get(j).getHeight() > pivot) {
 				j--;
 			}
 			
@@ -155,45 +148,24 @@ public class Main {
 		}
 		
 		if(min < j) {
-			quickSortByArea(min, j);
+			quickSortByLongSide(min, j);
 		}
 		if(i < max) {
-			quickSortByArea(i, max);
+			quickSortByLongSide(i, max);
 		}
 	}
-	
-	public static void quickSortBySide(int min, int max) {
+		
+	public static void quickSortByShortSide(int min, int max) {
 		int i = min;
 		int j = max;
-		int pivot;
 		
-		if(items.get(min).getWidth() <= items.get(min).getHeight()) {
-			pivot = items.get(min).getHeight();
-		}
-		else {
-			pivot = items.get(min).getWidth();
-		}
+		int pivot = items.get(min).getWidth();
 		
 		while (i <= j) {
-			int comp;
-			
-			if(items.get(i).getWidth() <= items.get(i).getHeight()) {
-				comp = items.get(i).getHeight();
-			}
-			else {
-				comp = items.get(i).getWidth();
-			}
-			while(comp < pivot) {
+			while(items.get(i).getWidth() < pivot) {
 				i++;
 			}
-			
-			if(items.get(j).getWidth() <= items.get(j).getHeight()) {
-				comp = items.get(j).getHeight();
-			}
-			else {
-				comp = items.get(j).getWidth();
-			}
-			while(comp > pivot) {
+			while(items.get(j).getWidth() > pivot) {
 				j--;
 			}
 			
@@ -204,16 +176,14 @@ public class Main {
 				j--;
 			}
 		}
-		
+	
 		if(min < j) {
-			quickSortBySide(min, j);
+			quickSortByShortSide(min, j);
 		}
 		if(i < max) {
-			quickSortBySide(i, max);
+			quickSortByShortSide(i, max);
 		}
-	}
-	
-	
+	}	
 	
 	public static void putIntoLuggage(int yZero, int xZero, Item item) {
 		for(int y = yZero; y < (yZero + item.getHeight()); y++) {
@@ -234,8 +204,6 @@ public class Main {
 					}
 				}
 			}
-			
-			//System.out.println("sum: " + sum);
 			
 			if(sum == 0) {
 				return true;
